@@ -7,9 +7,16 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
 
-    <!-- 1. ISSO AQUI É NOVO: Adiciona a biblioteca do Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<!-- SUBSTITUA as tags antigas do Firebase por ESTAS -->
+<script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"
+    }
+  }
+</script>
+<script type="module" src="script.js"></script>
 </head>
 <body>
     <div id="login-container" class="container">
@@ -72,4 +79,5 @@
     <!-- Script principal -->
     <script src="script.js"></script>
 </body>
+
 </html>
