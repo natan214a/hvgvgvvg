@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOPAMINA v2.0 | Sistema de Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <!-- 1. ISSO AQUI É NOVO: Adiciona a biblioteca do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div id="login-container" class="container">
+        <header>
+            <h1>D<span class="blink">O</span>PAMINA v2.0</h1>
+            <p class="subtitle">SISTEMA DE LOGIN</p>
+        </header>
+        <div class="card">
+            <h2>🔐 LOGIN</h2>
+            <p>Selecione seu usuário e insira a senha fornecida pelo administrador.</p>
+            <div id="login-form">
+                <label for="user-select">Usuário:</label>
+                <select id="user-select">
+                    <option value="">--Selecione--</option>
+                    <option value="joaopedro">joaopedro</option>
+                    <option value="rikelme">rikelme</option>
+                    <option value="rycharlison">rycharlison</option>
+                    <option value="gabriel">gabriel</option>
+                    <option value="marcos">marcos</option>
+                    <option value="henrique">henrique</option>
+                </select>
+                <label for="password-input">Senha:</label>
+                <input type="password" id="password-input" placeholder="Digite a senha">
+                <button onclick="fazerLogin()">ENTRAR</button>
+                <p id="login-status"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="container" style="display: none;">
+        <header>
+            <h1>C<span class="blink">A</span>RTOLA v2.0</h1>
+            <p class="subtitle">CHAT em Tempo Real</p> <!-- Mudei o subtítulo -->
+            <p>Usuário: <span id="current-user"></span> | <a href="#" onclick="sair(); return false;">Sair</a></p> <!-- return false; previne recarregar -->
+        </header>
+
+        <main>
+            <section id="chat-section" class="card">
+                <h2>💬 CHAT GRUPAL</h2> <!-- Nome mais genérico -->
+                <p>Agora as mensagens aparecem para TODO MUNDO em tempo real! 🔥</p> <!-- Mensagem nova -->
+                <div id="chat-messages" style="height: 300px; overflow-y: scroll; border: 1px solid #333; padding: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.2);">
+                    <!-- Mensagens serão carregadas aqui -->
+                </div>
+                <div>
+                    <input type="text" id="chat-input" placeholder="Digite sua mensagem" style="width: 100%; padding: 10px; margin-bottom: 5px;">
+                    <button onclick="enviarMensagem()">Enviar Mensagem</button>
+                    <!-- Vamos deixar o upload de arquivo para uma próxima versão, é mais complexo -->
+                    <!-- <input type="file" id="file-input" accept="image/*,audio/*" style="display: none;">
+                    <button onclick="document.getElementById('file-input').click()">Enviar Foto ou Áudio</button> -->
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>AGORA SIM, FOGUINHO NO TEMPO REAL! 🚀</p> <!-- Mensagem nova -->
+            <h3>feito por natan | powered by Firebase</h3> <!-- Crédito extra -->
+        </footer>
+    </div>
+
+    <!-- Script principal -->
+    <script src="script.js"></script>
+</body>
+</html>
