@@ -1,4 +1,8 @@
-// 2. ISSO AQUI É A CHAVE: Cole a configuração do seu projeto Firebase AQUI!
+// Importações da SDK Modular (v9)
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, serverTimestamp, query } from 'firebase/firestore';
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDaAIuIIQRKj2MFjA6KKnRbZxd106GC0A4",
   authDomain: "testmsg-9bc0b.firebaseapp.com",
@@ -8,12 +12,12 @@ const firebaseConfig = {
   appId: "1:207775061836:web:9f3c4ce3c43f2f5115a1e9"
 };
 
-// 3. Inicializa o Firebase (usando a variável global 'firebase' da tag <script>)
-firebase.initializeApp(firebaseConfig);
-// 4. Pega uma referência para o serviço Firestore
-const db = firebase.firestore();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(app);
 
-// Lista de usuários (agora é só para a tela de login frontend)
+// Lista de usuários
 const USUARIOS = {
     "joaopedro": "123",
     "rikelme": "123",
@@ -28,9 +32,8 @@ let estadoUsuario = {
     usuarioAtual: null
 };
 
-// 5. Referência para a coleção "mensagens" no Firestore.
-// Tudo que for salvo aqui vai ser compartilhado com todos.
-const mensagensRef = db.collection("mensagens");
+// Referência para a coleção "mensagens"
+const mensagensRef = collection(db, "mensagens");
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,12 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
             enviarMensagem();
         }
     });
-    // Comentei o handler de arquivo por enquanto
-    // document.getElementById('file-input').addEventListener('change', handleFileUpload);
 });
 
 // --- FUNÇÕES DE LOGIN --- //
-// Essas não mudam muito, pois o login ainda é local/frontend
 function verificarLogin() {
     const usuario = sessionStorage.getItem('usuarioDopamina');
     if (usuario && USUARIOS[usuario]) {
@@ -54,8 +54,6 @@ function verificarLogin() {
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('app-container').style.display = 'block';
         document.getElementById('current-user').textContent = usuario;
-        
-        // 6. TROCAMOS AQUI: Em vez de iniciar um intervalo, iniciamos a ESCUTA em tempo real.
         iniciarEscutaTempoReal();
     } else {
         document.getElementById('login-container').style.display = 'block';
@@ -80,8 +78,6 @@ function fazerLogin() {
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('app-container').style.display = 'block';
         document.getElementById('current-user').textContent = usuario;
-        
-        // 7. TROCAMOS AQUI TAMBÉM.
         iniciarEscutaTempoReal();
     } else {
         document.getElementById('login-status').textContent = "Senha incorreta!";
@@ -93,33 +89,31 @@ function sair() {
     location.reload();
 }
 
-// --- FUNÇÕES DO CHAT - TOTALMENTE REFEITAS --- //
-
-// 8. A MÁGIA ACONTECE AQUI: Esta função fica "escutando" o banco de dados.
-// Sempre que uma nova mensagem é adicionada, ela automaticamente atualiza a tela de TODO MUNDO.
+// --- FUNÇÕES DO CHAT --- //
 function iniciarEscutaTempoReal() {
-    mensagensRef.orderBy("timestamp", "asc").onSnapshot((snapshot) => {
+    // Cria uma query ordenada por timestamp
+    const q = query(mensagensRef, orderBy("timestamp", "asc"));
+    
+    // Fica escutando em tempo real
+    onSnapshot(q, (snapshot) => {
         const chatMessages = document.getElementById('chat-messages');
-        chatMessages.innerHTML = ''; // Limpa a tela
+        chatMessages.innerHTML = '';
 
-        // Itera por cada documento (mensagem) no banco
         snapshot.forEach((doc) => {
-            const msg = doc.data(); // Pega os dados da mensagem
+            const msg = doc.data();
             mostrarMensagemNaTela(msg);
         });
         chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, (error) => { // Tratamento de erro básico
+    }, (error) => {
         console.error("Erro ao escutar mensagens:", error);
     });
 }
 
-// 9. Função auxiliar para colocar a mensagem na tela
 function mostrarMensagemNaTela(msg) {
     const chatMessages = document.getElementById('chat-messages');
     const div = document.createElement('div');
     div.className = 'chat-message';
 
-    // Converte o timestamp do Firebase para uma hora legível
     let tempoLegivel = "Agora mesmo";
     if (msg.timestamp) {
         tempoLegivel = msg.timestamp.toDate().toLocaleTimeString();
@@ -131,42 +125,31 @@ function mostrarMensagemNaTela(msg) {
             <span class="time">${tempoLegivel}</span>
         </div> 
         <div>${msg.texto}</div>
-        ${msg.imagem ? `<img class="chat-image" src="${msg.imagem}" alt="Imagem">` : ''} 
-        ${msg.audio ? `<audio class="chat-audio" controls src="${msg.audio}"></audio>` : ''}
     `;
     chatMessages.appendChild(div);
 }
 
-// 10. FUNÇÃO ENVIAR MENSAGEM: Agora salva no Firebase, não no localStorage!
-function enviarMensagem() {
+async function enviarMensagem() {
     const input = document.getElementById('chat-input');
     const texto = input.value.trim();
     
-    if (!texto) return; // Não envia mensagem vazia
+    if (!texto) return;
 
-    // 11. Cria um objeto com os dados da mensagem
-    const novaMensagem = {
-        usuario: estadoUsuario.usuarioAtual,
-        texto: texto,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp() // Usa a hora EXATA do servidor
-    };
-
-    // 12. ADICIONA a mensagem na coleção "mensagens" do Firestore
-    mensagensRef.add(novaMensagem)
-        .then(() => {
-            // Sucesso! A mensagem foi para o banco.
-            // A função `iniciarEscutaTempoReal()` vai detectar automaticamente e atualizar a tela.
-            input.value = ''; // Limpa o campo de input
-        })
-        .catch((error) => {
-            // Algo deu errado. Mostra um alerta.
-            console.error("Erro ao enviar mensagem: ", error);
-            alert("Erro ao enviar mensagem! Veja o console.");
+    try {
+        // Adiciona um novo documento com um ID gerado automaticamente
+        await addDoc(mensagensRef, {
+            usuario: estadoUsuario.usuarioAtual,
+            texto: texto,
+            timestamp: serverTimestamp() // Usa a função serverTimestamp da v9
         });
+        input.value = '';
+    } catch (error) {
+        console.error("Erro ao enviar mensagem: ", error);
+        alert("Erro ao enviar mensagem!");
+    }
 }
 
-// 13. Função de upload de arquivo desabilitada por enquanto.
 function handleFileUpload(e) {
-    alert("Upload de arquivo será implementado na próxima versão! Use apenas texto por enquanto.");
+    alert("Upload de arquivo desabilitado.");
     e.target.value = '';
 }
